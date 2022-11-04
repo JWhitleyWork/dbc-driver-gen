@@ -14,11 +14,19 @@
 
 #include "dbc-driver-gen/dbc-driver-gen.hpp"
 
+#include <string>
+
+#include <can_dbc_parser/DbcBuilder.hpp>
+
+using CanDbcParser::DbcBuilder;
+
 namespace DbcDriverGen
 {
 
-DbcDriverGenerator::DbcDriverGenerator()
+DbcDriverGenerator::DbcDriverGenerator(const std::string & dbc_path)
 {
+  DbcBuilder builder;
+  m_dbc = builder.NewDbc(dbc_path);
 }
 
 }  // namespace DbcDriverGen

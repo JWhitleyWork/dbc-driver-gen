@@ -15,13 +15,22 @@
 #ifndef DBC_DRIVER_GEN__DBC_DRIVER_GEN_HPP_
 #define DBC_DRIVER_GEN__DBC_DRIVER_GEN_HPP_
 
+#include <string>
+
+#include <can_dbc_parser/Dbc.hpp>
+
+using CanDbcParser::Dbc;
+
 namespace DbcDriverGen
 {
 
 class DbcDriverGenerator
 {
 public:
-  DbcDriverGenerator();
+  DbcDriverGenerator(const std::string & dbc_path);
+
+private:
+  Dbc m_dbc;
 };
 
 }  // namespace DbcDriverGen
