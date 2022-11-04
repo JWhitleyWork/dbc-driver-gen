@@ -53,7 +53,13 @@ DbcDriverGenerator::DbcDriverGenerator(
   }
 
   DbcBuilder builder;
-  m_dbc = builder.NewDbc(dbc_path);
+
+  if (dbc_file_path.is_relative()) {
+    auto abs_path = std::filesystem::absolute(dbc_file_path);
+    m_dbc = builder.NewDbc(abs_path.string());
+  } else {
+    m_dbc = builder.NewDbc(dbc_file_path.string());
+  }
 }
 
 void DbcDriverGenerator::generate_driver(const std::string & output_path)
