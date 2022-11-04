@@ -12,20 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "dbc-driver-gen/dbc-driver.hpp"
-
-#include <cstdlib>
+#include "dbc-driver-gen/dbc-driver-gen.hpp"
 
 namespace DbcDriverGen
 {
 
-DbcDriver::DbcDriver()
+DbcDriverGenerator::DbcDriverGenerator()
 {
 }
 
 }  // namespace DbcDriverGen
-
-int main(int argc, char * argv[])
-{
-  return 0;
-}

@@ -12,14 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "dbc-driver-gen/dbc-driver.hpp"
+#include "dbc-driver-gen/dbc-ros2-driver.hpp"
 
 #include <cstdlib>
 
 namespace DbcDriverGen
 {
 
-DbcDriver::DbcDriver()
+DbcRos2Driver::DbcRos2Driver()
 {
 }
 

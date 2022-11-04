@@ -14,12 +14,16 @@ if(NOT CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD 14)
 endif()
 
-add_library(dbc-driver SHARED
-  src/dbc-driver.cpp
+find_package(can_dbc_parser REQUIRED)
+
+# LIBRARY
+
+add_library(${PROJECT_NAME}
+  src/${PROJECT_NAME}.cpp
 )
 
-target_include_directories(dbc-driver
-  PUBLIC
+target_include_directories(${PROJECT_NAME}
+  PUBLIC 
     # Different paths for includes for build and install phase supported
     # via INSTALL_INTERFACE and BUILD_INTERFACE generator expressions.
     $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include>
@@ -27,21 +31,70 @@ target_include_directories(dbc-driver
     $<INSTALL_INTERFACE:include>
 )
 
-set_target_properties(dbc-driver PROPERTIES
-  VERSION ${dbc-driver-gen_VERSION}
-  SOVERSION ${dbc-driver-gen_VERSION_MAJOR}
-  PUBLIC_HEADER "include/dbc-driver-gen/dbc-driver.hpp"
+target_link_libraries(${PROJECT_NAME} CanDbcParser::can_dbc_parser)
+
+set_target_properties(${PROJECT_NAME} PROPERTIES
+  VERSION ${${PROJECT_NAME}_VERSION}
+  SOVERSION ${${PROJECT_NAME}_VERSION_MAJOR}
 )
 
-set(CMAKE_INSTALL_CMAKEDIR share/dbc-driver-gen/cmake)
-
-install(DIRECTORY include/dbc-driver-gen/
+install(FILES include/${PROJECT_NAME}/${PROJECT_NAME}.hpp
   DESTINATION include/${PROJECT_NAME}
 )
 
+# END LIBRARY
+
+# DBC-DRIVER
+
+add_executable(dbc-driver
+  src/dbc-driver.cpp
+)
+
+target_include_directories(dbc-driver
+  PRIVATE 
+    # Different paths for includes for build and install phase supported
+    # via INSTALL_INTERFACE and BUILD_INTERFACE generator expressions.
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
+    $<INSTALL_INTERFACE:include>
+)
+
+target_link_libraries(dbc-driver ${PROJECT_NAME})
+
+set_target_properties(dbc-driver PROPERTIES
+  VERSION ${${PROJECT_NAME}_VERSION}
+)
+
+# END DBC-DRIVER
+
+# DBC-ROS2-DRIVER
+
+add_executable(dbc-ros2-driver
+  src/dbc-ros2-driver.cpp
+)
+
+target_include_directories(dbc-ros2-driver
+  PRIVATE 
+    # Different paths for includes for build and install phase supported
+    # via INSTALL_INTERFACE and BUILD_INTERFACE generator expressions.
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
+    $<INSTALL_INTERFACE:include>
+)
+
+target_link_libraries(dbc-ros2-driver ${PROJECT_NAME})
+
+set_target_properties(dbc-ros2-driver PROPERTIES
+  VERSION ${${PROJECT_NAME}_VERSION}
+)
+
+# END DBC-ROS2-DRIVER
+
+set(CMAKE_INSTALL_CMAKEDIR share/${PROJECT_NAME}/cmake)
+
 install(
-  TARGETS dbc-driver
-  EXPORT dbc-driver-genTargets
+  TARGETS ${PROJECT_NAME} dbc-driver dbc-ros2-driver
+  EXPORT ${PROJECT_NAME}Targets
   LIBRARY DESTINATION lib
   ARCHIVE DESTINATION lib
   RUNTIME DESTINATION bin
@@ -51,21 +104,21 @@ install(
 
 install(EXPORT dbc-driver-genTargets
   FILE dbc-driver-genTargets.cmake
-  NAMESPACE DriverGen::
+  NAMESPACE DbcDriverGen::
   DESTINATION ${CMAKE_INSTALL_CMAKEDIR}
 )
 
 include(CMakePackageConfigHelpers)
-write_basic_package_version_file(dbc-driver-genConfigVersion.cmake
+write_basic_package_version_file(${PROJECT_NAME}ConfigVersion.cmake
   COMPATIBILITY AnyNewerVersion
 )
 
 install(FILES
-  ${CMAKE_CURRENT_BINARY_DIR}/dbc-driver-genConfigVersion.cmake
+  ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake
   DESTINATION ${CMAKE_INSTALL_CMAKEDIR}
 )
 
-install(FILES dbc-driver-genConfig.cmake
+install(FILES ${PROJECT_NAME}Config.cmake
   DESTINATION ${CMAKE_INSTALL_CMAKEDIR}
 )
 

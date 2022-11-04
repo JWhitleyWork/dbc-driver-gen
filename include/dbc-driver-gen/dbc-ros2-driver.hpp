@@ -12,20 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "dbc-driver-gen/dbc-driver.hpp"
-
-#include <cstdlib>
+#ifndef DBC_DRIVER_GEN__DBC_ROS2_DRIVER_HPP_
+#define DBC_DRIVER_GEN__DBC_ROS2_DRIVER_HPP_
 
 namespace DbcDriverGen
 {
 
-DbcDriver::DbcDriver()
+class DbcRos2Driver
 {
-}
+public:
+  DbcRos2Driver();
+};
 
 }  // namespace DbcDriverGen
 
-int main(int argc, char * argv[])
-{
-  return 0;
-}
+#endif  // DBC_DRIVER_GEN__DBC_ROS2_DRIVER_HPP_
