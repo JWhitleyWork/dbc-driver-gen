@@ -27,10 +27,17 @@ namespace DbcDriverGen
 class DbcDriverGenerator
 {
 public:
-  DbcDriverGenerator(const std::string & dbc_path);
+  DbcDriverGenerator(
+    const std::string & dbc_path,
+    const std::string & copyright_holder,
+    const std::string & project_name);
+
+  void generate_driver(const std::string & output_path);
 
 private:
   Dbc m_dbc;
+  std::string m_copyright_holder;
+  std::string m_project_name;
 };
 
 }  // namespace DbcDriverGen
