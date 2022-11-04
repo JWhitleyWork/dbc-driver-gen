@@ -18,7 +18,7 @@ find_package(can_dbc_parser REQUIRED)
 
 # LIBRARY
 
-add_library(${PROJECT_NAME}
+add_library(${PROJECT_NAME} SHARED
   src/${PROJECT_NAME}.cpp
 )
 
