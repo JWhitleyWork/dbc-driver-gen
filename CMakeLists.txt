@@ -14,7 +14,7 @@ if(NOT CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD 17)
 endif()
 
-find_package(can_dbc_parser REQUIRED)
+find_package(libdbcppp REQUIRED)
 
 # LIBRARY
 
@@ -29,9 +29,10 @@ target_include_directories(${PROJECT_NAME}
     $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
     $<INSTALL_INTERFACE:include>
+    ${libdbcppp_INCLUDE_DIRS}
 )
 
-target_link_libraries(${PROJECT_NAME} CanDbcParser::can_dbc_parser)
+target_link_libraries(${PROJECT_NAME} ${libdbcppp_LIBRARIES})
 
 set_target_properties(${PROJECT_NAME} PROPERTIES
   VERSION ${${PROJECT_NAME}_VERSION}

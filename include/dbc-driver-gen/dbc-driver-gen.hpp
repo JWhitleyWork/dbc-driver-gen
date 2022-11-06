@@ -15,11 +15,12 @@
 #ifndef DBC_DRIVER_GEN__DBC_DRIVER_GEN_HPP_
 #define DBC_DRIVER_GEN__DBC_DRIVER_GEN_HPP_
 
+#include <memory>
 #include <string>
 
-#include <can_dbc_parser/Dbc.hpp>
+#include <dbcppp/Network.h>
 
-using CanDbcParser::Dbc;
+using dbcppp::INetwork;
 
 namespace DbcDriverGen
 {
@@ -35,7 +36,7 @@ public:
   void generate_driver(const std::string & output_path);
 
 private:
-  Dbc m_dbc;
+  std::unique_ptr<INetwork> m_network;
   std::string m_copyright_holder;
   std::string m_project_name;
 };

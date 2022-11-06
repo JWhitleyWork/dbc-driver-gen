@@ -15,12 +15,13 @@
 #include "dbc-driver-gen/dbc-driver-gen.hpp"
 
 #include <filesystem>
+#include <fstream>
 #include <string>
 #include <system_error>
 
-#include <can_dbc_parser/DbcBuilder.hpp>
+#include <dbcppp/Network.h>
 
-using CanDbcParser::DbcBuilder;
+using dbcppp::INetwork;
 
 namespace DbcDriverGen
 {
@@ -52,14 +53,12 @@ DbcDriverGenerator::DbcDriverGenerator(
     throw fe;
   }
 
-  DbcBuilder builder;
-
   if (dbc_file_path.is_relative()) {
-    auto abs_path = std::filesystem::absolute(dbc_file_path);
-    m_dbc = builder.NewDbc(abs_path.string());
-  } else {
-    m_dbc = builder.NewDbc(dbc_file_path.string());
+    dbc_file_path = std::filesystem::absolute(dbc_file_path);
   }
+
+  std::ifstream file(dbc_file_path);
+  m_network = INetwork::LoadDBCFromIs(file);
 }
 
 void DbcDriverGenerator::generate_driver(const std::string & output_path)

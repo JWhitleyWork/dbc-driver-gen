@@ -2,8 +2,8 @@
 A C++ application for generating basic drivers and ROS2 wrappers from DBC files.
 
 ## Dependencies
-This project depends on [can_dbc_parser](https://github.com/JWhitleyWork/can_dbc_parser).
-Install `can_dbc_parser` according to the instructions in the readme.
+This project depends on [dbcppp](https://github.com/xR3b0rn/dbcppp).
+Install `dbcppp` according to the instructions in the readme.
 
 ## Build / Installation Instructions
 From the repository folder
