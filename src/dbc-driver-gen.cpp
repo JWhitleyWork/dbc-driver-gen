@@ -14,9 +14,13 @@
 
 #include "dbc-driver-gen/dbc-driver-gen.hpp"
 
+#include <algorithm>
+#include <cctype>
 #include <filesystem>
 #include <fstream>
+#include <sstream>
 #include <string>
+#include <string_view>
 #include <system_error>
 
 #include <dbcppp/Network.h>
@@ -31,7 +35,7 @@ DbcDriverGenerator::DbcDriverGenerator(
   const std::string & copyright_holder,
   const std::string & project_name)
 : m_copyright_holder(copyright_holder),
-  m_project_name(project_name)
+  m_project_name_snake(project_name)
 {
   std::filesystem::path dbc_file_path(dbc_path);
 
@@ -59,10 +63,64 @@ DbcDriverGenerator::DbcDriverGenerator(
 
   std::ifstream file(dbc_file_path);
   m_network = INetwork::LoadDBCFromIs(file);
+
+  // Get different versions of project_name
+  std::transform(project_name.begin(), project_name.end(), m_project_name_upper.begin(),
+    [](unsigned char c){ return std::toupper(c); });
+  std::transform(project_name.begin(), project_name.end(), m_project_name_lower.begin(),
+    [](unsigned char c){ return std::tolower(c); });
+  bool word_sep = false;
+  m_project_name_camel = std::toupper(project_name.at(1));
+  for (const auto & c : project_name) {
+    if (word_sep) {
+      m_project_name_camel += std::toupper(c);
+      word_sep = false;
+      continue;
+    }
+
+    if (c == '_') {
+      word_sep = true;
+      continue;
+    }
+
+    m_project_name_camel += std::tolower(c);
+  }
 }
 
 void DbcDriverGenerator::generate_driver(const std::string & output_path)
 {
+  std::filesystem::path op(output_path);
+  // TODO(jwhitley): Validate output_path here
+
+  std::filesystem::path op_header_path = op / "include" / m_project_name_lower;
+
+  auto header = generate_header_file();
+}
+
+std::string_view DbcDriverGenerator::generate_header_file()
+{
+  std::ostringstream hss;
+
+  // Header guard
+  hss << "#ifndef " << m_project_name_upper << "__" << m_project_name_upper << "_DRIVER_HPP_\r";
+  hss << "#define " << m_project_name_upper << "__" << m_project_name_upper << "_DRIVER_HPP_\r\r";
+
+  // Includes
+  hss << "#include <memory>" << "\r\r";
+
+  // Namespace and class declarations
+  hss << "namespace " << m_project_name_camel << "\r{\rclass ";
+  hss << m_project_name_camel << "Driver\rpublic:\r\t\t";
+  hss << m_project_name_camel << "Driver();\r";
+
+  // TODO(jwhitley): Create Encode and Decode functions for each message
+
+  // Bottom of header file
+  hss << "}:\r}  // namespace" << m_project_name_camel << "\r\r";
+  hss << "#endif  // " << m_project_name_upper << "__";
+  hss << m_project_name_upper << "_DRIVER_HPP_" << std::endl;
+
+  return hss.str();
 }
 
 }  // namespace DbcDriverGen

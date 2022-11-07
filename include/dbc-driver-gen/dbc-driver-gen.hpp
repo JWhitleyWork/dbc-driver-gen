@@ -17,6 +17,7 @@
 
 #include <memory>
 #include <string>
+#include <string_view>
 
 #include <dbcppp/Network.h>
 
@@ -36,9 +37,14 @@ public:
   void generate_driver(const std::string & output_path);
 
 private:
+  std::string_view generate_header_file();
+
   std::unique_ptr<INetwork> m_network;
   std::string m_copyright_holder;
-  std::string m_project_name;
+  std::string m_project_name_snake;
+  std::string m_project_name_camel;
+  std::string m_project_name_upper;
+  std::string m_project_name_lower;
 };
 
 }  // namespace DbcDriverGen
