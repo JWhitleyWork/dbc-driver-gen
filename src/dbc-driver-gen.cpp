@@ -16,11 +16,12 @@
 
 #include <algorithm>
 #include <cctype>
+#include <chrono>
+#include <ctime>
 #include <filesystem>
 #include <fstream>
-#include <sstream>
+#include <iostream>
 #include <string>
-#include <string_view>
 #include <system_error>
 
 #include <dbcppp/Network.h>
@@ -35,7 +36,10 @@ DbcDriverGenerator::DbcDriverGenerator(
   const std::string & copyright_holder,
   const std::string & project_name)
 : m_copyright_holder(copyright_holder),
-  m_project_name_snake(project_name)
+  m_project_name_snake(project_name),
+  m_project_name_camel(project_name),
+  m_project_name_upper(project_name),
+  m_project_name_lower(project_name)
 {
   std::filesystem::path dbc_file_path(dbc_path);
 
@@ -65,62 +69,100 @@ DbcDriverGenerator::DbcDriverGenerator(
   m_network = INetwork::LoadDBCFromIs(file);
 
   // Get different versions of project_name
-  std::transform(project_name.begin(), project_name.end(), m_project_name_upper.begin(),
-    [](unsigned char c){ return std::toupper(c); });
-  std::transform(project_name.begin(), project_name.end(), m_project_name_lower.begin(),
-    [](unsigned char c){ return std::tolower(c); });
+  std::transform(m_project_name_upper.begin(), m_project_name_upper.end(),
+    m_project_name_upper.begin(), [](unsigned char c){ return std::toupper(c); });
+  std::transform(m_project_name_lower.begin(), m_project_name_lower.end(),
+    m_project_name_lower.begin(), [](unsigned char c){ return std::tolower(c); });
+
   bool word_sep = false;
-  m_project_name_camel = std::toupper(project_name.at(1));
-  for (const auto & c : project_name) {
-    if (word_sep) {
-      m_project_name_camel += std::toupper(c);
-      word_sep = false;
-      continue;
+  m_project_name_camel[0] = std::toupper(m_project_name_camel[0]);
+  for (auto it = m_project_name_camel.begin() + 1; it != m_project_name_camel.end(); it++)
+  {
+    if (*it == '-' || *it == '_')
+    {
+      it = m_project_name_camel.erase(it);
+      *it = toupper(*it);
     }
-
-    if (c == '_') {
-      word_sep = true;
-      continue;
-    }
-
-    m_project_name_camel += std::tolower(c);
   }
 }
 
 void DbcDriverGenerator::generate_driver(const std::string & output_path)
 {
   std::filesystem::path op(output_path);
-  // TODO(jwhitley): Validate output_path here
 
-  std::filesystem::path op_header_path = op / "include" / m_project_name_lower;
+  bool folder_exists = std::filesystem::exists(op);
 
-  auto header = generate_header_file();
+  if (!folder_exists) {
+    auto fsec = std::make_error_code(std::errc::no_such_file_or_directory);
+    std::filesystem::filesystem_error
+      fe{"Provided output path does not exist or is inaccessible.", fsec};
+    throw fe;
+  }
+  
+  bool is_directory = std::filesystem::is_directory(op);
+
+  if (!is_directory) {
+    auto fsec = std::make_error_code(std::errc::no_such_file_or_directory);
+    std::filesystem::filesystem_error
+      fe{"Provided output path is not a directory.", fsec};
+    throw fe;
+  }
+
+  if (op.is_relative()) {
+    op = std::filesystem::absolute(op);
+  }
+  
+  std::filesystem::path op_root_dir = op / m_project_name_lower;
+  std::cout << "Creating " << op_root_dir << "." << std::endl;
+  std::filesystem::create_directory(op_root_dir);
+
+  std::filesystem::path op_include_dir = op_root_dir / "include";
+  std::cout << "Creating " << op_include_dir << "." << std::endl;
+  std::filesystem::create_directory(op_include_dir);
+
+  std::filesystem::path op_header_dir = op_include_dir / m_project_name_lower;
+  std::cout << "Creating " << op_header_dir << "." << std::endl;
+  std::filesystem::create_directory(op_header_dir);
+
+  std::filesystem::path op_src_dir = op_root_dir / "src";
+  std::cout << "Creating " << op_src_dir << "." << std::endl;
+  std::filesystem::create_directory(op_src_dir);
+
+  std::cout << "Generating header files..." << std::endl;
+
+  generate_header_file(op_header_dir);
 }
 
-std::string_view DbcDriverGenerator::generate_header_file()
+std::string DbcDrivereGenerator::generate_copyright()
 {
-  std::ostringstream hss;
+  auto now = std::chrono::system_clock::now();
+  auto now_time_t = std::chrono::system_clock::to_time_t(now);
+  auto now_tm = std::localtime(*now_time_t);
+}
+
+void DbcDriverGenerator::generate_header_file(const std::filesystem::path & folder_path)
+{
+  std::ofstream hfile(folder_path / (m_project_name_snake + ".hpp"));
 
   // Header guard
-  hss << "#ifndef " << m_project_name_upper << "__" << m_project_name_upper << "_DRIVER_HPP_\r";
-  hss << "#define " << m_project_name_upper << "__" << m_project_name_upper << "_DRIVER_HPP_\r\r";
+  hfile << "#ifndef " << m_project_name_upper << "__" << m_project_name_upper << "_DRIVER_HPP_\n";
+  hfile << "#define " << m_project_name_upper << "__" << m_project_name_upper << "_DRIVER_HPP_\n\n";
 
   // Includes
-  hss << "#include <memory>" << "\r\r";
+  hfile << "#include <memory>" << "\n\n";
 
   // Namespace and class declarations
-  hss << "namespace " << m_project_name_camel << "\r{\rclass ";
-  hss << m_project_name_camel << "Driver\rpublic:\r\t\t";
-  hss << m_project_name_camel << "Driver();\r";
+  hfile << "namespace " << m_project_name_camel << "\n{\nclass ";
+  hfile << m_project_name_camel << "Driver\n{\npublic:\n  ";
+  hfile << m_project_name_camel << "Driver();\n";
 
   // TODO(jwhitley): Create Encode and Decode functions for each message
 
   // Bottom of header file
-  hss << "}:\r}  // namespace" << m_project_name_camel << "\r\r";
-  hss << "#endif  // " << m_project_name_upper << "__";
-  hss << m_project_name_upper << "_DRIVER_HPP_" << std::endl;
-
-  return hss.str();
+  hfile << "};\n}  // namespace " << m_project_name_camel << "\n\n";
+  hfile << "#endif  // " << m_project_name_upper << "__";
+  hfile << m_project_name_upper << "_DRIVER_HPP_\n";
+  hfile.close();
 }
 
 }  // namespace DbcDriverGen

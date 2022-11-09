@@ -15,9 +15,9 @@
 #ifndef DBC_DRIVER_GEN__DBC_DRIVER_GEN_HPP_
 #define DBC_DRIVER_GEN__DBC_DRIVER_GEN_HPP_
 
+#include <filesystem>
 #include <memory>
 #include <string>
-#include <string_view>
 
 #include <dbcppp/Network.h>
 
@@ -37,7 +37,7 @@ public:
   void generate_driver(const std::string & output_path);
 
 private:
-  std::string_view generate_header_file();
+  void generate_header_file(const std::filesystem::path & folder_path);
 
   std::unique_ptr<INetwork> m_network;
   std::string m_copyright_holder;

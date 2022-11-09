@@ -29,10 +29,9 @@ target_include_directories(${PROJECT_NAME}
     $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
     $<INSTALL_INTERFACE:include>
-    ${libdbcppp_INCLUDE_DIRS}
 )
 
-target_link_libraries(${PROJECT_NAME} ${libdbcppp_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} libdbcppp)
 
 set_target_properties(${PROJECT_NAME} PROPERTIES
   VERSION ${${PROJECT_NAME}_VERSION}
@@ -62,10 +61,6 @@ target_include_directories(dbc-driver
 
 target_link_libraries(dbc-driver ${PROJECT_NAME})
 
-set_target_properties(dbc-driver PROPERTIES
-  VERSION ${${PROJECT_NAME}_VERSION}
-)
-
 # END DBC-DRIVER
 
 # DBC-ROS2-DRIVER
@@ -84,10 +79,6 @@ target_include_directories(dbc-ros2-driver
 )
 
 target_link_libraries(dbc-ros2-driver ${PROJECT_NAME})
-
-set_target_properties(dbc-ros2-driver PROPERTIES
-  VERSION ${${PROJECT_NAME}_VERSION}
-)
 
 # END DBC-ROS2-DRIVER
 
