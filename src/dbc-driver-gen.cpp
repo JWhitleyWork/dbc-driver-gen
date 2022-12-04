@@ -35,8 +35,7 @@ DbcDriverGenerator::DbcDriverGenerator(
   const std::string & dbc_path,
   const std::string & copyright_holder,
   const std::string & project_name)
-: m_copyright_holder(copyright_holder),
-  m_project_name_snake(project_name),
+: m_project_name_snake(project_name),
   m_project_name_camel(project_name),
   m_project_name_upper(project_name),
   m_project_name_lower(project_name)
@@ -84,6 +83,9 @@ DbcDriverGenerator::DbcDriverGenerator(
       *it = toupper(*it);
     }
   }
+
+  // Generate the copyright line
+  m_copyright = generate_copyright(copyright_holder);
 }
 
 void DbcDriverGenerator::generate_driver(const std::string & output_path)
@@ -131,18 +133,32 @@ void DbcDriverGenerator::generate_driver(const std::string & output_path)
   std::cout << "Generating header files..." << std::endl;
 
   generate_header_file(op_header_dir);
+
+  std::cout << "Generating source files..." << std::endl;
+
+  generate_source_file(op_src_dir);
 }
 
-std::string DbcDrivereGenerator::generate_copyright()
+std::string DbcDriverGenerator::generate_copyright(const std::string & copyright_holder)
 {
+  std::ostringstream copyright;
+
   auto now = std::chrono::system_clock::now();
   auto now_time_t = std::chrono::system_clock::to_time_t(now);
-  auto now_tm = std::localtime(*now_time_t);
+  auto now_tm = std::localtime(&now_time_t);
+
+  copyright << "// Copyright " << (1900 + now_tm->tm_year) << " " << copyright_holder;
+  copyright << ", All Rights Reserved";
+
+  return copyright.str();
 }
 
 void DbcDriverGenerator::generate_header_file(const std::filesystem::path & folder_path)
 {
-  std::ofstream hfile(folder_path / (m_project_name_snake + ".hpp"));
+  std::ofstream hfile(folder_path / (m_project_name_snake + "_driver.hpp"));
+
+  // Copyright
+  hfile << m_copyright << "\n\n";
 
   // Header guard
   hfile << "#ifndef " << m_project_name_upper << "__" << m_project_name_upper << "_DRIVER_HPP_\n";
@@ -152,17 +168,41 @@ void DbcDriverGenerator::generate_header_file(const std::filesystem::path & fold
   hfile << "#include <memory>" << "\n\n";
 
   // Namespace and class declarations
-  hfile << "namespace " << m_project_name_camel << "\n{\nclass ";
+  hfile << "namespace " << m_project_name_camel << "\n{\n\nclass ";
   hfile << m_project_name_camel << "Driver\n{\npublic:\n  ";
   hfile << m_project_name_camel << "Driver();\n";
 
   // TODO(jwhitley): Create Encode and Decode functions for each message
 
   // Bottom of header file
-  hfile << "};\n}  // namespace " << m_project_name_camel << "\n\n";
+  hfile << "};\n\n}  // namespace " << m_project_name_camel << "\n\n";
   hfile << "#endif  // " << m_project_name_upper << "__";
   hfile << m_project_name_upper << "_DRIVER_HPP_\n";
   hfile.close();
 }
 
+void DbcDriverGenerator::generate_source_file(const std::filesystem::path & folder_path)
+{
+  std::ofstream sfile(folder_path / (m_project_name_snake + "_driver.cpp"));
+
+  // Copyright
+  sfile << m_copyright << "\n\n";
+
+  // Includes
+  sfile << "#include \"" << m_project_name_snake << "/" << m_project_name_snake;
+  sfile << "_driver.hpp\"\n";
+  sfile << "\n";
+
+  // Namespace
+  sfile << "namespace " << m_project_name_camel << "\n{\n\n";
+
+  // Constructor
+  sfile << m_project_name_camel << "Driver::" << m_project_name_camel << "Driver()\n";
+  sfile << "{\n" << "}\n";
+
+  // Bottom of source file
+  sfile << "\n}  // namespace " << m_project_name_camel << "\n";
+
+  sfile.close();
+}
 }  // namespace DbcDriverGen
