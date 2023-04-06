@@ -27,6 +27,7 @@
 #include <dbcppp/Network.h>
 
 using dbcppp::INetwork;
+using dbcppp::IMessage;
 
 namespace DbcDriverGen
 {
@@ -168,14 +169,17 @@ void DbcDriverGenerator::generate_header_file(const std::filesystem::path & fold
   hfile << "#include <memory>" << "\n\n";
 
   // Namespace and class declarations
-  hfile << "namespace " << m_project_name_camel << "\n{\n\nclass ";
-  hfile << m_project_name_camel << "Driver\n{\npublic:\n  ";
+  hfile << "namespace " << m_project_name_camel << "\n{\n\n"
+  hfile << "class " << m_project_name_camel << "Driver\n{\npublic:\n  ";
   hfile << m_project_name_camel << "Driver();\n";
+  hfile << "};\n\n";
 
-  // TODO(jwhitley): Create Encode and Decode functions for each message
+  // Loop through each message in the DBC and generate some stuff
+  for (const IMessage & msg : m_network->Messages()) {
+  }
 
   // Bottom of header file
-  hfile << "};\n\n}  // namespace " << m_project_name_camel << "\n\n";
+  hfile << "}  // namespace " << m_project_name_camel << "\n\n";
   hfile << "#endif  // " << m_project_name_upper << "__";
   hfile << m_project_name_upper << "_DRIVER_HPP_\n";
   hfile.close();
