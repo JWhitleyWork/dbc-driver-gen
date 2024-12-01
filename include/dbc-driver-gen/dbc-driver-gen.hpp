@@ -19,9 +19,8 @@
 #include <memory>
 #include <string>
 
+#include "dbc-driver-gen/third-party/inja.hpp"
 #include "dbc-driver-gen/third-party/libdbc.hpp"
-
-using Libdbc::DbcParser;
 
 namespace DbcDriverGen
 {
@@ -34,19 +33,34 @@ public:
     const std::string & copyright_holder,
     const std::string & project_name);
 
-  void generate_driver(const std::string & output_path);
+  void generate_driver(const std::string & output_path, const std::string & template_path);
 
 private:
   std::string generate_copyright(const std::string & copyright_holder);
-  void generate_header_file(const std::filesystem::path & folder_path);
-  void generate_source_file(const std::filesystem::path & folder_path);
+  void generate_dbc_json();
+  void generate_dbc_header(
+    const std::filesystem::path & output_folder,
+    const std::filesystem::path & template_folder
+  );
+  void generate_driver_header(
+    const std::filesystem::path & output_folder,
+    const std::filesystem::path & template_folder
+  );
+  void generate_driver_source(
+    const std::filesystem::path & output_folder,
+    const std::filesystem::path & template_folder
+  );
 
-  DbcParser m_parser;
   std::string m_project_name_snake;
   std::string m_project_name_camel;
   std::string m_project_name_upper;
   std::string m_project_name_lower;
   std::string m_copyright;
+
+  Libdbc::DbcParser m_parser;
+  inja::Environment m_inja_env;
+  inja::json m_common_json;
+  inja::json m_dbc_json;
 };
 
 }  // namespace DbcDriverGen

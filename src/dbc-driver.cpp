@@ -28,7 +28,8 @@ int main(int argc, char * argv[])
     ("dbc_file", "The DBC file used to generate the C++ driver.", cxxopts::value<std::string>())
     ("copyright_holder", "The person or company that holds the copyright for the generated code.", cxxopts::value<std::string>())
     ("project_name", "The name for the project - must be in snake_case.", cxxopts::value<std::string>())
-    ("output_path", "The output directory for the generated files.", cxxopts::value<std::string>());
+    ("output_path", "The output directory for the generated files.", cxxopts::value<std::string>())
+    ("templates_path", "The directory containing the Inja template files.", cxxopts::value<std::string>()->default_value("/usr/local/share/dbc-driver-gen/templates"));
 
   options.parse_positional({"dbc_file", "copyright_holder", "project_name", "output_path"});
   options.positional_help("dbc_file copyright_holder project_name output_path");
@@ -54,7 +55,7 @@ int main(int argc, char * argv[])
 
   std::cout << "DBC parsed. Generating driver..." << std::endl;
 
-  dbc_gen.generate_driver(parsed_opts["output_path"].as<std::string>());
+  dbc_gen.generate_driver(parsed_opts["output_path"].as<std::string>(), parsed_opts["templates_path"].as<std::string>());
 
   return 0;
 }

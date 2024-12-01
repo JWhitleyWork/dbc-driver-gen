@@ -78,6 +78,8 @@ target_link_libraries(dbc-ros2-driver ${PROJECT_NAME})
 
 # END DBC-ROS2-DRIVER
 
+# INSTALLATION
+
 set(CMAKE_INSTALL_CMAKEDIR share/${PROJECT_NAME}/cmake)
 
 install(
@@ -96,6 +98,10 @@ install(EXPORT dbc-driver-genTargets
   DESTINATION ${CMAKE_INSTALL_CMAKEDIR}
 )
 
+install(DIRECTORY templates/
+  DESTINATION share/${PROJECT_NAME}/templates
+)
+
 include(CMakePackageConfigHelpers)
 write_basic_package_version_file(${PROJECT_NAME}ConfigVersion.cmake
   COMPATIBILITY AnyNewerVersion
@@ -110,6 +116,10 @@ install(FILES ${PROJECT_NAME}Config.cmake
   DESTINATION ${CMAKE_INSTALL_CMAKEDIR}
 )
 
+# END INSTALLATION
+
+# UNINSTALL HELPERS
+
 CONFIGURE_FILE(
   "${CMAKE_CURRENT_SOURCE_DIR}/cmake_uninstall.cmake.in"
   "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake"
@@ -119,3 +129,5 @@ CONFIGURE_FILE(
 ADD_CUSTOM_TARGET(uninstall
   "${CMAKE_COMMAND}" -P "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake"
 )
+
+# END UNINSTALL HELPERS

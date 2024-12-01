@@ -1,0 +1,15 @@
+{{ copyright }}
+
+#ifndef {{ projectname.upper }}__{{ projectname.upper }}_DRIVER_HPP_
+#define {{ projectname.upper }}__{{ projectname.upper }}_DRIVER_HPP_
+
+namespace {{ projectname.lower }}
+{
+
+class {{ projectname.camel }}Driver
+{
+};
+
+}  // namespace {{ projectname.lower }}
+
+#endif  // {{ projectname.upper }}__{{ projectname.upper }}_DRIVER_HPP_

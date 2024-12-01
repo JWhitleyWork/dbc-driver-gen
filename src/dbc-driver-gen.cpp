@@ -24,8 +24,6 @@
 #include <string>
 #include <system_error>
 
-#include "dbc-driver-gen/third-party/inja.hpp"
-
 using Libdbc::Message;
 
 namespace DbcDriverGen
@@ -84,11 +82,25 @@ DbcDriverGenerator::DbcDriverGenerator(
     }
   }
 
-  // Generate the copyright line
-  m_copyright = generate_copyright(copyright_holder);
+  // Store common values as json
+  m_common_json["projectname"]["snake"] = m_project_name_snake;
+  m_common_json["projectname"]["camel"] = m_project_name_camel;
+  m_common_json["projectname"]["upper"] = m_project_name_upper;
+  m_common_json["projectname"]["lower"] = m_project_name_lower;
+  m_common_json["copyright"] = generate_copyright(copyright_holder);
+
+  generate_dbc_json();
 }
 
-void DbcDriverGenerator::generate_driver(const std::string & output_path)
+void DbcDriverGenerator::generate_dbc_json()
+{
+  // Loop through each message in the DBC and generate some stuff
+  for (const auto & msg : m_parser.get_messages()) {
+  }
+}
+
+void DbcDriverGenerator::generate_driver(
+  const std::string & output_path, const std::string & template_path)
 {
   std::filesystem::path op(output_path);
 
@@ -113,30 +125,24 @@ void DbcDriverGenerator::generate_driver(const std::string & output_path)
   if (op.is_relative()) {
     op = std::filesystem::absolute(op);
   }
-  
-  std::filesystem::path op_root_dir = op / m_project_name_lower;
-  std::cout << "Creating " << op_root_dir << "." << std::endl;
-  std::filesystem::create_directory(op_root_dir);
 
-  std::filesystem::path op_include_dir = op_root_dir / "include";
-  std::cout << "Creating " << op_include_dir << "." << std::endl;
-  std::filesystem::create_directory(op_include_dir);
+  std::cout << "Creating directories..." << std::endl;
 
-  std::filesystem::path op_header_dir = op_include_dir / m_project_name_lower;
-  std::cout << "Creating " << op_header_dir << "." << std::endl;
-  std::filesystem::create_directory(op_header_dir);
+  std::filesystem::path header_output_dir =
+    op / m_project_name_lower / "include" / m_project_name_lower;
+  std::filesystem::create_directories(header_output_dir);
 
-  std::filesystem::path op_src_dir = op_root_dir / "src";
-  std::cout << "Creating " << op_src_dir << "." << std::endl;
-  std::filesystem::create_directory(op_src_dir);
+  std::filesystem::path source_output_dir = op / m_project_name_lower / "src";
+  std::filesystem::create_directories(source_output_dir);
 
   std::cout << "Generating header files..." << std::endl;
 
-  generate_header_file(op_header_dir);
+  generate_dbc_header(header_output_dir, template_path);
+  generate_driver_header(header_output_dir, template_path);
 
   std::cout << "Generating source files..." << std::endl;
 
-  generate_source_file(op_src_dir);
+  generate_driver_source(source_output_dir, template_path);
 }
 
 std::string DbcDriverGenerator::generate_copyright(const std::string & copyright_holder)
@@ -153,59 +159,42 @@ std::string DbcDriverGenerator::generate_copyright(const std::string & copyright
   return copyright.str();
 }
 
-void DbcDriverGenerator::generate_header_file(const std::filesystem::path & folder_path)
+void DbcDriverGenerator::generate_dbc_header(
+  const std::filesystem::path & output_folder,
+  const std::filesystem::path & template_folder
+)
 {
-  std::ofstream hfile(folder_path / (m_project_name_snake + "_driver.hpp"));
+  std::filesystem::path output_file = output_folder / (m_project_name_snake + "_dbc.hpp");
+  std::filesystem::path template_file = template_folder / "dbc.hpp.inja";
 
-  // Copyright
-  hfile << m_copyright << "\n\n";
+  // TODO: Merge m_common_json with m_dbc_json
 
-  // Header guard
-  hfile << "#ifndef " << m_project_name_upper << "__" << m_project_name_upper << "_DRIVER_HPP_\n";
-  hfile << "#define " << m_project_name_upper << "__" << m_project_name_upper << "_DRIVER_HPP_\n\n";
-
-  // Includes
-  hfile << "#include <memory>" << "\n\n";
-
-  // Namespace and class declarations
-  hfile << "namespace " << m_project_name_camel << "\n{\n\n";
-  hfile << "class " << m_project_name_camel << "Driver\n{\npublic:\n  ";
-  hfile << m_project_name_camel << "Driver();\n";
-  hfile << "};\n\n";
-
-  // Loop through each message in the DBC and generate some stuff
-  for (const auto & msg : m_parser.get_messages()) {
-  }
-
-  // Bottom of header file
-  hfile << "}  // namespace " << m_project_name_camel << "\n\n";
-  hfile << "#endif  // " << m_project_name_upper << "__";
-  hfile << m_project_name_upper << "_DRIVER_HPP_\n";
-  hfile.close();
+  m_inja_env.write(template_file, m_common_json, output_file);
 }
 
-void DbcDriverGenerator::generate_source_file(const std::filesystem::path & folder_path)
+void DbcDriverGenerator::generate_driver_header(
+  const std::filesystem::path & output_folder,
+  const std::filesystem::path & template_folder
+)
 {
-  std::ofstream sfile(folder_path / (m_project_name_snake + "_driver.cpp"));
+  std::filesystem::path output_file = output_folder / (m_project_name_snake + "_driver.hpp");
+  std::filesystem::path template_file = template_folder / "driver.hpp.inja";
 
-  // Copyright
-  sfile << m_copyright << "\n\n";
+  // TODO: Merge m_common_json with driver_header_json
 
-  // Includes
-  sfile << "#include \"" << m_project_name_snake << "/" << m_project_name_snake;
-  sfile << "_driver.hpp\"\n";
-  sfile << "\n";
+  m_inja_env.write(template_file, m_common_json, output_file);
+}
 
-  // Namespace
-  sfile << "namespace " << m_project_name_camel << "\n{\n\n";
+void DbcDriverGenerator::generate_driver_source(
+  const std::filesystem::path & output_folder,
+  const std::filesystem::path & template_folder
+)
+{
+  std::filesystem::path output_file = output_folder / (m_project_name_snake + "_driver.cpp");
+  std::filesystem::path template_file = template_folder / "driver.cpp.inja";
 
-  // Constructor
-  sfile << m_project_name_camel << "Driver::" << m_project_name_camel << "Driver()\n";
-  sfile << "{\n" << "}\n";
+  // TODO: Merge m_common_json with driver_source_json
 
-  // Bottom of source file
-  sfile << "\n}  // namespace " << m_project_name_camel << "\n";
-
-  sfile.close();
+  m_inja_env.write(template_file, m_common_json, output_file);
 }
 }  // namespace DbcDriverGen
