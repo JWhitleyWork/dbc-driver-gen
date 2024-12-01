@@ -1,4 +1,4 @@
-// Copyright 2022 Electrified Autonomy
+// Copyright 2024 Electrified Autonomy
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,9 +19,9 @@
 #include <memory>
 #include <string>
 
-#include <dbcppp/Network.h>
+#include "dbc-driver-gen/third-party/libdbc.hpp"
 
-using dbcppp::INetwork;
+using Libdbc::DbcParser;
 
 namespace DbcDriverGen
 {
@@ -41,7 +41,7 @@ private:
   void generate_header_file(const std::filesystem::path & folder_path);
   void generate_source_file(const std::filesystem::path & folder_path);
 
-  std::unique_ptr<INetwork> m_network;
+  DbcParser m_parser;
   std::string m_project_name_snake;
   std::string m_project_name_camel;
   std::string m_project_name_upper;

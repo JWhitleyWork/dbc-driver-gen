@@ -1,4 +1,4 @@
-// Copyright 2022 Electrified Autonomy
+// Copyright 2024 Electrified Autonomy
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -24,10 +24,9 @@
 #include <string>
 #include <system_error>
 
-#include <dbcppp/Network.h>
+#include "dbc-driver-gen/third-party/inja.hpp"
 
-using dbcppp::INetwork;
-using dbcppp::IMessage;
+using Libdbc::Message;
 
 namespace DbcDriverGen
 {
@@ -66,7 +65,7 @@ DbcDriverGenerator::DbcDriverGenerator(
   }
 
   std::ifstream file(dbc_file_path);
-  m_network = INetwork::LoadDBCFromIs(file);
+  m_parser.parse_file(file);
 
   // Get different versions of project_name
   std::transform(m_project_name_upper.begin(), m_project_name_upper.end(),
@@ -169,13 +168,13 @@ void DbcDriverGenerator::generate_header_file(const std::filesystem::path & fold
   hfile << "#include <memory>" << "\n\n";
 
   // Namespace and class declarations
-  hfile << "namespace " << m_project_name_camel << "\n{\n\n"
+  hfile << "namespace " << m_project_name_camel << "\n{\n\n";
   hfile << "class " << m_project_name_camel << "Driver\n{\npublic:\n  ";
   hfile << m_project_name_camel << "Driver();\n";
   hfile << "};\n\n";
 
   // Loop through each message in the DBC and generate some stuff
-  for (const IMessage & msg : m_network->Messages()) {
+  for (const auto & msg : m_parser.get_messages()) {
   }
 
   // Bottom of header file

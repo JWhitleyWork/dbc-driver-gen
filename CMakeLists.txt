@@ -14,8 +14,6 @@ if(NOT CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD 17)
 endif()
 
-find_package(libdbcppp REQUIRED)
-
 # LIBRARY
 
 add_library(${PROJECT_NAME} SHARED
@@ -30,8 +28,6 @@ target_include_directories(${PROJECT_NAME}
     $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
     $<INSTALL_INTERFACE:include>
 )
-
-target_link_libraries(${PROJECT_NAME} libdbcppp)
 
 set_target_properties(${PROJECT_NAME} PROPERTIES
   VERSION ${${PROJECT_NAME}_VERSION}
