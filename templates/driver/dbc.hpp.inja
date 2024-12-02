@@ -3,13 +3,13 @@
 #ifndef {{ projectname.upper }}__{{ projectname.upper }}_DBC_HPP_
 #define {{ projectname.upper }}__{{ projectname.upper }}_DBC_HPP_
 
-namespace {{ projectname.lower }}
+namespace {{ projectname.camel }}
 {
 
 class {{ projectname.camel }}Dbc
 {
 };
 
-}  // namespace {{ projectname.lower }}
+}  // namespace {{ projectname.camel }}
 
 #endif  // {{ projectname.upper }}__{{ projectname.upper }}_DBC_HPP_

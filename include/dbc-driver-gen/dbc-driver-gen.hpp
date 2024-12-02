@@ -33,22 +33,26 @@ public:
     const std::string & copyright_holder,
     const std::string & project_name);
 
-  void generate_driver(const std::string & output_path, const std::string & template_path);
+  void generate_driver(const std::string & output_path, const std::string & templates_path);
 
 private:
   std::string generate_copyright(const std::string & copyright_holder);
   void generate_dbc_json();
   void generate_dbc_header(
     const std::filesystem::path & output_folder,
-    const std::filesystem::path & template_folder
+    const std::filesystem::path & templates_folder
   );
   void generate_driver_header(
     const std::filesystem::path & output_folder,
-    const std::filesystem::path & template_folder
+    const std::filesystem::path & templates_folder
   );
   void generate_driver_source(
     const std::filesystem::path & output_folder,
-    const std::filesystem::path & template_folder
+    const std::filesystem::path & templates_folder
+  );
+  void generate_cmake(
+    const std::filesystem::path & output_folder,
+    const std::filesystem::path & templates_folder
   );
 
   std::string m_project_name_snake;

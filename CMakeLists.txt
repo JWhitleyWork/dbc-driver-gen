@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.8)
 project(dbc-driver-gen
   VERSION 0.1.0
   LANGUAGES C CXX
@@ -7,11 +7,6 @@ project(dbc-driver-gen
 # Default to C99
 if(NOT CMAKE_C_STANDARD)
   set(CMAKE_C_STANDARD 99)
-endif()
-
-# Default to C++17
-if(NOT CMAKE_CXX_STANDARD)
-  set(CMAKE_CXX_STANDARD 17)
 endif()
 
 # LIBRARY
@@ -33,6 +28,9 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
   VERSION ${${PROJECT_NAME}_VERSION}
   SOVERSION ${${PROJECT_NAME}_VERSION_MAJOR}
 )
+
+target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_17)
+set_target_properties(${PROJECT_NAME} PROPERTIES CXX_EXTENSIONS OFF)
 
 install(FILES include/${PROJECT_NAME}/${PROJECT_NAME}.hpp
   DESTINATION include/${PROJECT_NAME}
@@ -57,6 +55,9 @@ target_include_directories(dbc-driver
 
 target_link_libraries(dbc-driver ${PROJECT_NAME})
 
+target_compile_features(dbc-driver PUBLIC cxx_std_17)
+set_target_properties(dbc-driver PROPERTIES CXX_EXTENSIONS OFF)
+
 # END DBC-DRIVER
 
 # DBC-ROS2-DRIVER
@@ -75,6 +76,9 @@ target_include_directories(dbc-ros2-driver
 )
 
 target_link_libraries(dbc-ros2-driver ${PROJECT_NAME})
+
+target_compile_features(dbc-ros2-driver PUBLIC cxx_std_17)
+set_target_properties(dbc-ros2-driver PROPERTIES CXX_EXTENSIONS OFF)
 
 # END DBC-ROS2-DRIVER
 

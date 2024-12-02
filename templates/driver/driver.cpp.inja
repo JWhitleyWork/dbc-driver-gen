@@ -3,11 +3,11 @@
 #include "{{ projectname.snake }}/{{ projectname.snake }}_dbc.hpp"
 #include "{{ projectname.snake }}/{{ projectname.snake }}_driver.hpp"
 
-namespace {{ projectname.lower }}
+namespace {{ projectname.camel }}
 {
 
 {{ projectname.camel }}Driver::{{ projectname.camel }}Driver()
 {
 }
 
-}  // namespace {{ projectname.lower }}
+}  // namespace {{ projectname.camel }}

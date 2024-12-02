@@ -3,13 +3,13 @@
 #ifndef {{ projectname.upper }}__{{ projectname.upper }}_DRIVER_HPP_
 #define {{ projectname.upper }}__{{ projectname.upper }}_DRIVER_HPP_
 
-namespace {{ projectname.lower }}
+namespace {{ projectname.camel }}
 {
 
 class {{ projectname.camel }}Driver
 {
 };
 
-}  // namespace {{ projectname.lower }}
+}  // namespace {{ projectname.camel }}
 
 #endif  // {{ projectname.upper }}__{{ projectname.upper }}_DRIVER_HPP_

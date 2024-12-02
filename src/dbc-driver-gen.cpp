@@ -100,49 +100,83 @@ void DbcDriverGenerator::generate_dbc_json()
 }
 
 void DbcDriverGenerator::generate_driver(
-  const std::string & output_path, const std::string & template_path)
+  const std::string & output_path, const std::string & templates_path)
 {
-  std::filesystem::path op(output_path);
+  // Test output path
+  std::filesystem::path output_folder(output_path);
 
-  bool folder_exists = std::filesystem::exists(op);
+  bool output_folder_exists = std::filesystem::exists(output_folder);
 
-  if (!folder_exists) {
+  if (!output_folder_exists) {
     auto fsec = std::make_error_code(std::errc::no_such_file_or_directory);
     std::filesystem::filesystem_error
       fe{"Provided output path does not exist or is inaccessible.", fsec};
     throw fe;
   }
   
-  bool is_directory = std::filesystem::is_directory(op);
+  bool output_folder_is_dir = std::filesystem::is_directory(output_folder);
 
-  if (!is_directory) {
+  if (!output_folder_is_dir) {
     auto fsec = std::make_error_code(std::errc::no_such_file_or_directory);
     std::filesystem::filesystem_error
       fe{"Provided output path is not a directory.", fsec};
     throw fe;
   }
 
-  if (op.is_relative()) {
-    op = std::filesystem::absolute(op);
+  if (output_folder.is_relative()) {
+    output_folder = std::filesystem::absolute(output_folder);
+  }
+  
+  // Test templates path
+  auto templates_folder = std::filesystem::path(templates_path) / "driver";
+
+  bool templates_folder_exists = std::filesystem::exists(templates_folder);
+
+  if (!templates_folder_exists) {
+    auto fsec = std::make_error_code(std::errc::no_such_file_or_directory);
+    std::filesystem::filesystem_error
+      fe{"Provided templates folder does not exist, is inaccessible, or does not contain a driver folder.", fsec};
+    throw fe;
+  }
+
+  bool templates_folder_is_dir = std::filesystem::is_directory(templates_folder);
+
+  if (!templates_folder_is_dir) {
+    auto fsec = std::make_error_code(std::errc::no_such_file_or_directory);
+    std::filesystem::filesystem_error
+      fe{"Provided templates folder is not a directory.", fsec};
+    throw fe;
+  }
+
+  if (templates_folder.is_relative()) {
+    templates_folder = std::filesystem::absolute(templates_folder);
   }
 
   std::cout << "Creating directories..." << std::endl;
 
-  std::filesystem::path header_output_dir =
-    op / m_project_name_lower / "include" / m_project_name_lower;
-  std::filesystem::create_directories(header_output_dir);
+  std::filesystem::path base_output_folder = output_folder / m_project_name_lower;
 
-  std::filesystem::path source_output_dir = op / m_project_name_lower / "src";
-  std::filesystem::create_directories(source_output_dir);
+  std::filesystem::path header_output_folder =
+    base_output_folder / "include" / m_project_name_lower;
+  std::filesystem::create_directories(header_output_folder);
+
+  std::filesystem::path source_output_folder = base_output_folder / "src";
+  std::filesystem::create_directories(source_output_folder);
 
   std::cout << "Generating header files..." << std::endl;
 
-  generate_dbc_header(header_output_dir, template_path);
-  generate_driver_header(header_output_dir, template_path);
+  generate_dbc_header(header_output_folder, templates_folder);
+  generate_driver_header(header_output_folder, templates_folder);
 
   std::cout << "Generating source files..." << std::endl;
 
-  generate_driver_source(source_output_dir, template_path);
+  generate_driver_source(source_output_folder, templates_folder);
+
+  std::cout << "Generating CMake file..." << std::endl;
+
+  generate_cmake(base_output_folder, templates_folder);
+
+  std::cout << "Done! Driver generated in: " << base_output_folder << std::endl;
 }
 
 std::string DbcDriverGenerator::generate_copyright(const std::string & copyright_holder)
@@ -161,11 +195,11 @@ std::string DbcDriverGenerator::generate_copyright(const std::string & copyright
 
 void DbcDriverGenerator::generate_dbc_header(
   const std::filesystem::path & output_folder,
-  const std::filesystem::path & template_folder
+  const std::filesystem::path & templates_folder
 )
 {
   std::filesystem::path output_file = output_folder / (m_project_name_snake + "_dbc.hpp");
-  std::filesystem::path template_file = template_folder / "dbc.hpp.inja";
+  std::filesystem::path template_file = templates_folder / "dbc.hpp.inja";
 
   // TODO: Merge m_common_json with m_dbc_json
 
@@ -174,11 +208,11 @@ void DbcDriverGenerator::generate_dbc_header(
 
 void DbcDriverGenerator::generate_driver_header(
   const std::filesystem::path & output_folder,
-  const std::filesystem::path & template_folder
+  const std::filesystem::path & templates_folder
 )
 {
   std::filesystem::path output_file = output_folder / (m_project_name_snake + "_driver.hpp");
-  std::filesystem::path template_file = template_folder / "driver.hpp.inja";
+  std::filesystem::path template_file = templates_folder / "driver.hpp.inja";
 
   // TODO: Merge m_common_json with driver_header_json
 
@@ -187,14 +221,31 @@ void DbcDriverGenerator::generate_driver_header(
 
 void DbcDriverGenerator::generate_driver_source(
   const std::filesystem::path & output_folder,
-  const std::filesystem::path & template_folder
+  const std::filesystem::path & templates_folder
 )
 {
   std::filesystem::path output_file = output_folder / (m_project_name_snake + "_driver.cpp");
-  std::filesystem::path template_file = template_folder / "driver.cpp.inja";
+  std::filesystem::path template_file = templates_folder / "driver.cpp.inja";
 
   // TODO: Merge m_common_json with driver_source_json
 
   m_inja_env.write(template_file, m_common_json, output_file);
+}
+
+void DbcDriverGenerator::generate_cmake(
+  const std::filesystem::path & output_folder,
+  const std::filesystem::path & templates_folder
+)
+{
+  std::filesystem::path output_file = output_folder / "CMakeLists.txt";
+  std::filesystem::path template_file = templates_folder / "CMakeLists.txt.inja";
+
+  // TODO: Merge m_common_json with driver_source_json
+
+  m_inja_env.write(template_file, m_common_json, output_file);
+
+  // Copy uninstall template
+  std::filesystem::path uninstall_file = templates_folder / "cmake_uninstall.cmake.in";
+  std::filesystem::copy(uninstall_file, output_folder);
 }
 }  // namespace DbcDriverGen
