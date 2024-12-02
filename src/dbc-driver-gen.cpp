@@ -165,12 +165,11 @@ void DbcDriverGenerator::generate_driver(
 
   std::cout << "Generating header files..." << std::endl;
 
-  generate_dbc_header(header_output_folder, templates_folder);
-  generate_driver_header(header_output_folder, templates_folder);
+  generate_header_files(header_output_folder, templates_folder);
 
   std::cout << "Generating source files..." << std::endl;
 
-  generate_driver_source(source_output_folder, templates_folder);
+  generate_source_files(source_output_folder, templates_folder);
 
   std::cout << "Generating CMake file..." << std::endl;
 
@@ -193,37 +192,51 @@ std::string DbcDriverGenerator::generate_copyright(const std::string & copyright
   return copyright.str();
 }
 
-void DbcDriverGenerator::generate_dbc_header(
+void DbcDriverGenerator::generate_header_files(
   const std::filesystem::path & output_folder,
   const std::filesystem::path & templates_folder
 )
 {
-  std::filesystem::path output_file = output_folder / (m_project_name_snake + "_dbc.hpp");
-  std::filesystem::path template_file = templates_folder / "dbc.hpp.inja";
+  // Common headers
+  std::filesystem::path output_file = output_folder / "visibility_control.hpp";
+  std::filesystem::path template_file = templates_folder / "visibility_control.hpp.inja";
+
+  m_inja_env.write(template_file, m_common_json, output_file);
+
+  // SocketCAN headers
+  output_file = output_folder / "socket_can_common.hpp";
+  template_file = templates_folder / "socket_can_common.hpp.inja";
+
+  m_inja_env.write(template_file, m_common_json, output_file);
+
+  output_file = output_folder / "socket_can_id.hpp";
+  template_file = templates_folder / "socket_can_id.hpp.inja";
+
+  m_inja_env.write(template_file, m_common_json, output_file);
+
+  // DBC header
+  output_file = output_folder / (m_project_name_snake + "_dbc.hpp");
+  template_file = templates_folder / "dbc.hpp.inja";
 
   // TODO: Merge m_common_json with m_dbc_json
 
   m_inja_env.write(template_file, m_common_json, output_file);
-}
 
-void DbcDriverGenerator::generate_driver_header(
-  const std::filesystem::path & output_folder,
-  const std::filesystem::path & templates_folder
-)
-{
-  std::filesystem::path output_file = output_folder / (m_project_name_snake + "_driver.hpp");
-  std::filesystem::path template_file = templates_folder / "driver.hpp.inja";
+  // Driver header
+  output_file = output_folder / (m_project_name_snake + "_driver.hpp");
+  template_file = templates_folder / "driver.hpp.inja";
 
   // TODO: Merge m_common_json with driver_header_json
 
   m_inja_env.write(template_file, m_common_json, output_file);
 }
 
-void DbcDriverGenerator::generate_driver_source(
+void DbcDriverGenerator::generate_source_files(
   const std::filesystem::path & output_folder,
   const std::filesystem::path & templates_folder
 )
 {
+  // Driver source file
   std::filesystem::path output_file = output_folder / (m_project_name_snake + "_driver.cpp");
   std::filesystem::path template_file = templates_folder / "driver.cpp.inja";
 

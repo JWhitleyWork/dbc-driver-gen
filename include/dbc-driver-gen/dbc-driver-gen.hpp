@@ -38,15 +38,11 @@ public:
 private:
   std::string generate_copyright(const std::string & copyright_holder);
   void generate_dbc_json();
-  void generate_dbc_header(
+  void generate_header_files(
     const std::filesystem::path & output_folder,
     const std::filesystem::path & templates_folder
   );
-  void generate_driver_header(
-    const std::filesystem::path & output_folder,
-    const std::filesystem::path & templates_folder
-  );
-  void generate_driver_source(
+  void generate_source_files(
     const std::filesystem::path & output_folder,
     const std::filesystem::path & templates_folder
   );
